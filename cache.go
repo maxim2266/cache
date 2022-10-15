@@ -8,6 +8,8 @@ import (
 	"golang.org/x/exp/constraints"
 )
 
+const maxCacheSize = 64 * 1024 * 1024 // arbitrary large number
+
 // Cache is an opaque type representing a cache with keys of type "K" and values of type "V".
 type Cache[K constraints.Ordered, V any] struct {
 	mu   sync.Mutex
@@ -31,12 +33,12 @@ type cacheNode[K constraints.Ordered, V any] struct {
 
 // New creates a new Cache with keys of type "K" and values of type "V".
 func New[K constraints.Ordered, V any](size int, ttl time.Duration, backend func(K) (V, error)) *Cache[K, V] {
-	if size < 2 || size > 16*1024*1024 {
-		panic(fmt.Sprintf("attempted to create Cache with invalid capacity of %d items", size))
+	if size < 2 || size > maxCacheSize {
+		fail[K, V]("invalid capacity of %d items", size)
 	}
 
 	if backend == nil {
-		panic("attempted to create Cache with nil backend() function")
+		fail[K, V]("nil backend function")
 	}
 
 	return &Cache[K, V]{
@@ -45,6 +47,20 @@ func New[K constraints.Ordered, V any](size int, ttl time.Duration, backend func
 		ttl:     ttl,
 		backend: backend,
 	}
+}
+
+//go:noinline
+func fail[K, V any](msg string, args ...any) {
+	var k K
+	var v V
+
+	prefix := fmt.Sprintf("attempted to create a Cache[%T,%T] with ", k, v)
+
+	if len(args) > 0 {
+		msg = fmt.Sprintf(msg, args...)
+	}
+
+	panic(prefix + msg)
 }
 
 // Get retrieves the value associated with the given key, invoking backend where necessary.
