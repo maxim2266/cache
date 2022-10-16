@@ -3,14 +3,14 @@
 [![License: BSD 3 Clause](https://img.shields.io/badge/License-BSD_3--Clause-yellow.svg)](https://opensource.org/licenses/BSD-3-Clause)
 [![GoDoc](https://godoc.org/github.com/maxim2266/cache?status.svg)](https://godoc.org/github.com/maxim2266/cache)
 
-Probably, a 121st implementation of cache since Go generics were introduced, but this one actually
+Probably, a 121<sup>st</sup> implementation of cache since Go generics were introduced, but this one actually
 solves the race condition
 [problem](https://old.reddit.com/r/golang/comments/lw9ujj/ristretto_the_most_performant_concurrent_cache/gpgxnx9/)
 that exists in some other more starred packages.
 
 ### API
 
-A cache for any given types K and V ("key" and "value", respectively) can be constructed
+A cache for any given types `K` and `V` ("key" and "value", respectively) can be constructed
 using function<br/>
 ```Go
 func New(size int, ttl time.Duration, backend func(K) (V, error)) *Cache[K,V]
