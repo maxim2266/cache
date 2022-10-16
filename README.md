@@ -30,7 +30,15 @@ A cache object has two public methods:
 the result is transparently retrieved from the back-end. The cache itself does not produce any error,
 so all the errors are from the back-end. Notably, this method has the same signature as the
 back-end function, and it may be considered as a wrapper around the back-end that adds
-[memoisation](https://en.wikipedia.org/wiki/Memoization).
+[memoisation](https://en.wikipedia.org/wiki/Memoization). For example, given the back-end function
+	```Go
+	func getUserInfo(userID int) (*UserInfo, error)
+	```
+	a caching wrapper with the same signature can be created like
+	```Go
+	getUserInfoCached := cache.New(1000, 2 * time.Hour, getUserInfo).Get
+	```
+	(assuming in this particular scenario there is no need to ever delete a record from the cache).
 * `Delete(K)`: deletes the specified key from the cache.
 
 The cache object is safe for concurrent access. To flush the cache simply replace it with a
