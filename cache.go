@@ -4,14 +4,12 @@ import (
 	"fmt"
 	"sync"
 	"time"
-
-	"golang.org/x/exp/constraints"
 )
 
 const maxCacheSize = 64 * 1024 * 1024 // arbitrary large number
 
 // Cache is an opaque type representing a cache with keys of type "K" and values of type "V".
-type Cache[K constraints.Ordered, V any] struct {
+type Cache[K comparable, V any] struct {
 	mu   sync.Mutex
 	data map[K]*cacheNode[K, V]
 	lru  *cacheNode[K, V]
@@ -21,7 +19,7 @@ type Cache[K constraints.Ordered, V any] struct {
 	backend func(K) (V, error)
 }
 
-type cacheNode[K constraints.Ordered, V any] struct {
+type cacheNode[K comparable, V any] struct {
 	prev, next *cacheNode[K, V]
 	once       sync.Once
 
@@ -32,7 +30,7 @@ type cacheNode[K constraints.Ordered, V any] struct {
 }
 
 // New creates a new Cache with keys of type "K" and values of type "V".
-func New[K constraints.Ordered, V any](size int, ttl time.Duration, backend func(K) (V, error)) *Cache[K, V] {
+func New[K comparable, V any](size int, ttl time.Duration, backend func(K) (V, error)) *Cache[K, V] {
 	if size < 2 || size > maxCacheSize {
 		fail[K, V]("invalid capacity of %d items", size)
 	}
