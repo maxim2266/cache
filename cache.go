@@ -98,23 +98,20 @@ func (c *Cache[K, V]) get(key K) (node *cacheNode[K, V]) {
 	if node = c.data[key]; node != nil { // found
 		if time.Since(node.ts) > c.ttl {
 			c.lruRemove(node)
-			node.next, node.prev = nil, nil // help gc
-			node = c.newNode(node.key)
+			c.initNode(node, key)
 		} else if node == c.lru.next { // most recent
 			return
 		} else {
 			c.lruRemove(node)
 		}
+	} else if len(c.data) == c.size { // not found, cache full
+		// delete the least recent
+		node = c.lru
+		c.lru = node.prev
+		node.prev.next, node.next.prev = node.next, node.prev
+		delete(c.data, node.key)
+		c.initNode(node, key)
 	} else { // not found
-		if len(c.data) == c.size { // cache full
-			// delete the least recent
-			node = c.lru
-			c.lru = node.prev
-			node.prev.next, node.next.prev = node.next, node.prev
-			node.next, node.prev = nil, nil // help gc
-			delete(c.data, node.key)
-		}
-
 		node = c.newNode(key)
 	}
 
@@ -138,6 +135,15 @@ func (c *Cache[K, V]) newNode(key K) (node *cacheNode[K, V]) {
 
 	c.data[key] = node
 	return
+}
+
+func (c *Cache[K, V]) initNode(node *cacheNode[K, V], key K) {
+	*node = cacheNode[K, V]{
+		key: key,
+		ts:  time.Now(),
+	}
+
+	c.data[key] = node
 }
 
 func (c *Cache[K, V]) lruRemove(node *cacheNode[K, V]) {
