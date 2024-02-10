@@ -10,10 +10,10 @@ that exists in some other more starred packages.
 
 ### API
 
-A cache for any given types `K` and `V` ("key" and "value", respectively) can be constructed
+An LRU cache for any given types `K` and `V` ("key" and "value", respectively) can be constructed
 using function<br/>
 ```Go
-func New(size int, ttl time.Duration, backend func(K) (V, error)) *Cache[K,V]
+func NewLRU(size int, ttl time.Duration, backend func(K) (V, error)) *Cache[K,V]
 ```
 Parameters:
 * Maximum size of the cache (a positive integer);
@@ -36,7 +36,7 @@ backend function, and it may be considered as a wrapper around the backend that 
 	```
 	a caching wrapper with the same signature can be created like
 	```Go
-	getUserInfoCached := cache.New(1000, 2 * time.Hour, getUserInfo).Get
+	getUserInfoCached := cache.NewLRU(1000, 2 * time.Hour, getUserInfo).Get
 	```
 	(assuming in this particular scenario there is no need to ever delete a record from the cache).
 * `Delete(K)`: deletes the specified key from the cache; no-op if the key is not present.
@@ -47,15 +47,16 @@ newly created one.
 ### Benchmarks
 ```
 ▶ go version
-go version go1.20.2 linux/amd64
+go version go1.22.0 linux/amd64
 ▶ go test -bench .
 goos: linux
 goarch: amd64
 pkg: github.com/maxim2266/cache
 cpu: Intel(R) Core(TM) i5-8500T CPU @ 2.10GHz
-BenchmarkCache-6            	18200140	        64.46 ns/op
-BenchmarkContendedCache-6   	  752596	      1609 ns/op
+BenchmarkCache-6            	19329848	        60.20 ns/op
+BenchmarkContendedCache-6   	  873910	      1697 ns/op
 ```
+
 Here the first benchmark reads the cache from a single goroutine, while the second one is the same
 benchmark running in parallel with another 10 goroutines accessing the cache concurrently. The cache
 is instantiated with integer keys and values.
