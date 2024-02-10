@@ -188,8 +188,8 @@ func lruNodeList(c *LRU[int, int]) ([]*lruNode[int, int], error) {
 			return nil, fmt.Errorf("unexpected node with key %d and value %d", node.key, node.value)
 		}
 
-		if node.key != res[i].key {
-			return nil, fmt.Errorf("unexpected node key: %d instead of %d", node.key, res[i].key)
+		if node != res[i] {
+			return nil, fmt.Errorf("unexpected node with key %d instead of %d", node.key, res[i].key)
 		}
 	}
 
