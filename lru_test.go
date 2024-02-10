@@ -13,7 +13,7 @@ import (
 func TestOneRecord(t *testing.T) {
 	var backend tracingBackend
 
-	c := New(5, time.Hour, backend.fn)
+	c := NewLRU(5, time.Hour, backend.fn)
 
 	if err := assertEmpty(c); err != nil {
 		t.Error("new c is not empty:", err)
@@ -79,7 +79,7 @@ func TestFewRecords(t *testing.T) {
 		err     error
 	)
 
-	c := New(2, time.Hour, backend.fn)
+	c := NewLRU(2, time.Hour, backend.fn)
 
 	if err = assertEmpty(c); err != nil {
 		t.Error("new c is not empty:", err)
@@ -93,7 +93,6 @@ func TestFewRecords(t *testing.T) {
 
 	if err = checkState(c, []int{2, 3}, validKey); err != nil {
 		t.Error("invalid state after fill:", err)
-		t.Log(dumpLRU(c))
 		return
 	}
 
@@ -113,7 +112,7 @@ func TestCacheOperation(t *testing.T) {
 		err     error
 	)
 
-	c := New(cacheSize, time.Hour, backend.fn)
+	c := NewLRU(cacheSize, time.Hour, backend.fn)
 
 	if err = fill(c.Get, []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, validKey); err != nil {
 		t.Error("error filling the c:", err)
@@ -123,7 +122,6 @@ func TestCacheOperation(t *testing.T) {
 	// LRU: {5, 6, 7, 8, 9}
 	if err = checkState(c, []int{5, 6, 7, 8, 9}, validKey); err != nil {
 		t.Error("invalid c state:", err)
-		t.Log(dumpLRU(c))
 		return
 	}
 
@@ -135,7 +133,6 @@ func TestCacheOperation(t *testing.T) {
 	// LRU: {5, 8, 9, 6, 7}
 	if err = checkState(c, []int{5, 8, 9, 6, 7}, validKey); err != nil {
 		t.Error("invalid c state:", err)
-		t.Log(dumpLRU(c))
 		return
 	}
 
@@ -147,7 +144,6 @@ func TestCacheOperation(t *testing.T) {
 	// LRU: {8, 6, 7, 42, 9}
 	if err = checkState(c, []int{8, 6, 7, 42, 9}, validKey); err != nil {
 		t.Error("invalid c state:", err)
-		t.Log(dumpLRU(c))
 		return
 	}
 
@@ -158,7 +154,6 @@ func TestCacheOperation(t *testing.T) {
 	// LRU: {7, 42}
 	if err = checkState(c, []int{7, 42}, validKey); err != nil {
 		t.Error("invalid c state:", err)
-		t.Log(dumpLRU(c))
 		return
 	}
 
@@ -178,7 +173,7 @@ func TestRandomFill(t *testing.T) {
 
 	const cacheSize = 90
 
-	c := New(cacheSize, time.Hour, backend.fn)
+	c := NewLRU(cacheSize, time.Hour, backend.fn)
 	get := func(k int) (int, error) {
 		calls++
 		return c.Get(k)
@@ -218,7 +213,7 @@ func TestCacheMiss(t *testing.T) {
 		return -k, nil
 	}
 
-	c := New(100, time.Hour, backend)
+	c := NewLRU(100, time.Hour, backend)
 
 	for i := 0; i < N; i++ {
 		getOne(c, i)
@@ -249,7 +244,7 @@ func TestConcurrentAccess(t *testing.T) {
 		calls   uint64
 	)
 
-	c := New(cacheSize, 500*time.Microsecond, backend.fn)
+	c := NewLRU(cacheSize, 500*time.Microsecond, backend.fn)
 
 	get := func(k int) (int, error) {
 		atomic.AddUint64(&calls, 1)
@@ -310,7 +305,7 @@ func TestConcurrentAccess(t *testing.T) {
 func BenchmarkCache(b *testing.B) {
 	const cacheSize = 100
 
-	c := New(cacheSize, time.Hour, simpleBackend)
+	c := NewLRU(cacheSize, time.Hour, simpleBackend)
 
 	// warm-up
 	for k := 0; k < cacheSize; k++ {
@@ -334,7 +329,7 @@ func BenchmarkCache(b *testing.B) {
 func BenchmarkContendedCache(b *testing.B) {
 	const cacheSize = 100
 
-	c := New(cacheSize, time.Hour, simpleBackend)
+	c := NewLRU(cacheSize, time.Hour, simpleBackend)
 
 	// warm-up
 	for k := 0; k < cacheSize; k++ {
