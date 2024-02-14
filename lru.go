@@ -21,8 +21,8 @@ type LRU[K comparable, V any] struct {
 	backend func(K) (V, error) // function for fetching data on cache miss
 }
 
-// NewLRU creates a new LRU cache with keys of type "K" and values of type "V".
-func NewLRU[K comparable, V any](
+// New creates a new LRU cache with keys of type "K" and values of type "V".
+func New[K comparable, V any](
 	size int,
 	ttl time.Duration,
 	backend func(K) (V, error),

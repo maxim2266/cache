@@ -13,7 +13,7 @@ import (
 func TestOneRecord(t *testing.T) {
 	var backend tracingBackend
 
-	c := NewLRU(5, time.Hour, backend.fn)
+	c := New(5, time.Hour, backend.fn)
 
 	if err := assertEmpty(c); err != nil {
 		t.Error("new c is not empty:", err)
@@ -79,7 +79,7 @@ func TestFewRecords(t *testing.T) {
 		err     error
 	)
 
-	c := NewLRU(2, time.Hour, backend.fn)
+	c := New(2, time.Hour, backend.fn)
 
 	if err = assertEmpty(c); err != nil {
 		t.Error("new c is not empty:", err)
@@ -112,7 +112,7 @@ func TestCacheOperation(t *testing.T) {
 		err     error
 	)
 
-	c := NewLRU(cacheSize, time.Hour, backend.fn)
+	c := New(cacheSize, time.Hour, backend.fn)
 
 	if err = fill(c.Get, []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, validKey); err != nil {
 		t.Error("error filling the c:", err)
@@ -173,7 +173,7 @@ func TestRandomFill(t *testing.T) {
 
 	const cacheSize = 90
 
-	c := NewLRU(cacheSize, time.Hour, backend.fn)
+	c := New(cacheSize, time.Hour, backend.fn)
 	get := func(k int) (int, error) {
 		calls++
 		return c.Get(k)
@@ -213,7 +213,7 @@ func TestCacheMiss(t *testing.T) {
 		return -k, nil
 	}
 
-	c := NewLRU(100, time.Hour, backend)
+	c := New(100, time.Hour, backend)
 
 	for i := 0; i < N; i++ {
 		getOne(c, i)
@@ -244,7 +244,7 @@ func TestConcurrentAccess(t *testing.T) {
 		calls   uint64
 	)
 
-	c := NewLRU(cacheSize, 500*time.Microsecond, backend.fn)
+	c := New(cacheSize, 500*time.Microsecond, backend.fn)
 
 	get := func(k int) (int, error) {
 		atomic.AddUint64(&calls, 1)
@@ -305,7 +305,7 @@ func TestConcurrentAccess(t *testing.T) {
 func BenchmarkCache(b *testing.B) {
 	const cacheSize = 100
 
-	c := NewLRU(cacheSize, time.Hour, simpleBackend)
+	c := New(cacheSize, time.Hour, simpleBackend)
 
 	// warm-up
 	for k := 0; k < cacheSize; k++ {
@@ -329,7 +329,7 @@ func BenchmarkCache(b *testing.B) {
 func BenchmarkContendedCache(b *testing.B) {
 	const cacheSize = 100
 
-	c := NewLRU(cacheSize, time.Hour, simpleBackend)
+	c := New(cacheSize, time.Hour, simpleBackend)
 
 	// warm-up
 	for k := 0; k < cacheSize; k++ {
@@ -370,7 +370,7 @@ func BenchmarkContendedCache(b *testing.B) {
 	}
 
 	// run
-	test := func() {
+	func() {
 		defer cancel()
 
 		b.ResetTimer()
@@ -383,8 +383,7 @@ func BenchmarkContendedCache(b *testing.B) {
 		}
 
 		b.StopTimer()
-	}
+	}()
 
-	test()
 	wg.Wait()
 }

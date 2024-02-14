@@ -13,7 +13,7 @@ that exists in some other more starred packages.
 An LRU cache for any given types `K` and `V` ("key" and "value", respectively) can be constructed
 using function<br/>
 ```Go
-func NewLRU(size int, ttl time.Duration, backend func(K) (V, error)) *Cache[K,V]
+func New(size int, ttl time.Duration, backend func(K) (V, error)) *Cache[K,V]
 ```
 Parameters:
 * Maximum size of the cache (a positive integer);
@@ -36,7 +36,7 @@ backend function, and it may be considered as a wrapper around the backend that 
 	```
 	a caching wrapper with the same signature can be created like
 	```Go
-	getUserInfoCached := cache.NewLRU(1000, 2 * time.Hour, getUserInfo).Get
+	getUserInfoCached := cache.New(1000, 2 * time.Hour, getUserInfo).Get
 	```
 	(assuming in this particular scenario there is no need to ever delete a record from the cache).
 * `Delete(K)`: deletes the specified key from the cache; no-op if the key is not present.
