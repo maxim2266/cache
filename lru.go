@@ -33,6 +33,14 @@ func New[K comparable, V any](
 			strconv.Itoa(size) + " items")
 	}
 
+	switch {
+	case ttl < 0:
+		panic("attempt to create an LRU cache with negative TTL")
+	case ttl == 0:
+		// keep "forever"
+		ttl = 50 * 365 * 24 * time.Hour
+	}
+
 	if backend == nil {
 		panic("attempt to create an LRU cache with nil backend function")
 	}
