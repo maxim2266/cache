@@ -16,7 +16,7 @@ func TestOneRecord(t *testing.T) {
 	c := New(5, time.Hour, backend.fn)
 
 	if err := assertEmpty(c); err != nil {
-		t.Error("new c is not empty:", err)
+		t.Error("new cache is not empty:", err)
 		return
 	}
 
@@ -82,12 +82,12 @@ func TestFewRecords(t *testing.T) {
 	c := New(2, time.Hour, backend.fn)
 
 	if err = assertEmpty(c); err != nil {
-		t.Error("new c is not empty:", err)
+		t.Error("new cache is not empty:", err)
 		return
 	}
 
 	if err = fill(c.Get, []int{1, 2, 3}, validKey); err != nil {
-		t.Error("error filling the c:", err)
+		t.Error("error filling the cache:", err)
 		return
 	}
 
@@ -115,35 +115,35 @@ func TestCacheOperation(t *testing.T) {
 	c := New(cacheSize, time.Hour, backend.fn)
 
 	if err = fill(c.Get, []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, validKey); err != nil {
-		t.Error("error filling the c:", err)
+		t.Error("error filling the cache:", err)
 		return
 	}
 
 	// LRU: {5, 6, 7, 8, 9}
 	if err = checkState(c, []int{5, 6, 7, 8, 9}, validKey); err != nil {
-		t.Error("invalid c state:", err)
+		t.Error("invalid cache state:", err)
 		return
 	}
 
 	if err = fill(c.Get, []int{6, 7}, validKey); err != nil {
-		t.Error("error filling the c:", err)
+		t.Error("error filling the cache:", err)
 		return
 	}
 
 	// LRU: {5, 8, 9, 6, 7}
 	if err = checkState(c, []int{5, 8, 9, 6, 7}, validKey); err != nil {
-		t.Error("invalid c state:", err)
+		t.Error("invalid cache state:", err)
 		return
 	}
 
 	if err = fill(c.Get, []int{42, 9}, validKey); err != nil {
-		t.Error("error filling the c:", err)
+		t.Error("error filling the cache:", err)
 		return
 	}
 
 	// LRU: {8, 6, 7, 42, 9}
 	if err = checkState(c, []int{8, 6, 7, 42, 9}, validKey); err != nil {
-		t.Error("invalid c state:", err)
+		t.Error("invalid cache state:", err)
 		return
 	}
 
@@ -153,7 +153,7 @@ func TestCacheOperation(t *testing.T) {
 
 	// LRU: {7, 42}
 	if err = checkState(c, []int{7, 42}, validKey); err != nil {
-		t.Error("invalid c state:", err)
+		t.Error("invalid cache state:", err)
 		return
 	}
 
@@ -186,19 +186,19 @@ func TestRandomFill(t *testing.T) {
 	}
 
 	if err := fill(get, keys[:], validKey); err != nil {
-		t.Error("error filling the c:", err)
+		t.Error("error filling the cache:", err)
 		return
 	}
 
-	// calculate c efficiency
+	// calculate cache efficiency
 	ratio := 100 * float64(calls-len(backend.trace)) / float64(calls)
 
-	t.Logf("c efficiency %.2f%%", ratio)
+	t.Logf("cache efficiency %.2f%%", ratio)
 
 	exp := float64(cacheSize)
 
 	if math.Abs((ratio-exp)/exp) > 0.01 {
-		t.Errorf("c efficiency: %.2f%% instead of %.2f%%", ratio, exp)
+		t.Errorf("cache efficiency: %.2f%% instead of %.2f%%", ratio, exp)
 		return
 	}
 }
