@@ -350,6 +350,8 @@ func BenchmarkContended_10000(b *testing.B) {
 }
 
 func bench(b *testing.B, cacheSize, numBgReaders int) {
+	atomic.StoreUint32(&numBackendCalls, 0)
+
 	c := New(cacheSize, time.Hour, benchBackend)
 
 	// warm-up
@@ -405,10 +407,18 @@ func bench(b *testing.B, cacheSize, numBgReaders int) {
 	}()
 
 	wg.Wait()
+
+	if nc := atomic.LoadUint32(&numBackendCalls); nc != benchCacheSize {
+		b.Errorf("unexpected number of backend calls: %d instead of %d", nc, benchCacheSize)
+	}
 }
 
 // backend for benchmark
+var numBackendCalls = uint32(0)
+
 func benchBackend(key int) (int, error) {
+	atomic.AddUint32(&numBackendCalls, 1)
+
 	if key >= 0 && key < benchCacheSize {
 		return -key, nil
 	}
