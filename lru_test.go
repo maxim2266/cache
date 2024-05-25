@@ -2,6 +2,7 @@ package cache
 
 import (
 	"context"
+	"fmt"
 	"math"
 	"math/rand"
 	"sync"
@@ -326,10 +327,30 @@ func BenchmarkCache(b *testing.B) {
 	}
 }
 
-func BenchmarkContendedCache(b *testing.B) {
-	const cacheSize = 100
+const benchCacheSize = 1000
 
-	c := New(cacheSize, time.Hour, simpleBackend)
+func BenchmarkContended_1(b *testing.B) {
+	bench(b, benchCacheSize, 1)
+}
+
+func BenchmarkContended_10(b *testing.B) {
+	bench(b, benchCacheSize, 10)
+}
+
+func BenchmarkContended_100(b *testing.B) {
+	bench(b, benchCacheSize, 100)
+}
+
+func BenchmarkContended_1000(b *testing.B) {
+	bench(b, benchCacheSize, 1000)
+}
+
+func BenchmarkContended_10000(b *testing.B) {
+	bench(b, benchCacheSize, 10000)
+}
+
+func bench(b *testing.B, cacheSize, numBgReaders int) {
+	c := New(cacheSize, time.Hour, benchBackend)
 
 	// warm-up
 	for k := 0; k < cacheSize; k++ {
@@ -344,11 +365,9 @@ func BenchmarkContendedCache(b *testing.B) {
 
 	var wg sync.WaitGroup
 
-	const numReaders = 10
+	wg.Add(numBgReaders)
 
-	wg.Add(numReaders)
-
-	for i := 0; i < numReaders; i++ {
+	for i := 0; i < numBgReaders; i++ {
 		go func() {
 			defer wg.Done()
 
@@ -357,7 +376,7 @@ func BenchmarkContendedCache(b *testing.B) {
 				case <-ctx.Done():
 					return
 				default:
-					for i := 0; i < 10000; i++ {
+					for i := 0; i < cacheSize; i++ {
 						if err := getOne(c, i%cacheSize); err != nil {
 							b.Error(err)
 							cancel()
@@ -386,4 +405,13 @@ func BenchmarkContendedCache(b *testing.B) {
 	}()
 
 	wg.Wait()
+}
+
+// backend for benchmark
+func benchBackend(key int) (int, error) {
+	if key >= 0 && key < benchCacheSize {
+		return -key, nil
+	}
+
+	return 0, fmt.Errorf("key not found: %d", key)
 }
