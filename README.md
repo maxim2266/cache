@@ -47,16 +47,21 @@ To flush the cache simply replace it with a newly created one.
 ### Benchmarks
 ```
 ▶ go version
-go version go1.22.0 linux/amd64
+go version go1.24.1 linux/amd64
 ▶ go test -bench .
 goos: linux
 goarch: amd64
 pkg: github.com/maxim2266/cache
 cpu: Intel(R) Core(TM) i5-8500T CPU @ 2.10GHz
-BenchmarkCache-6            	19329848	        60.20 ns/op
-BenchmarkContendedCache-6   	  873910	      1697 ns/op
+BenchmarkCache-6                20900569                56.08 ns/op
+BenchmarkContended_1-6           7087633               186.1 ns/op
+BenchmarkContended_10-6           656268              2455 ns/op
+BenchmarkContended_100-6           32578             35045 ns/op
+BenchmarkContended_1000-6           3614            434145 ns/op
+BenchmarkContended_10000-6           328           6779290 ns/op
+PASS
 ```
-
-Here the first benchmark reads the cache from a single goroutine, while the second one is the same
-benchmark running in parallel with another 10 goroutines accessing the cache concurrently. The cache
-is instantiated with integer keys and values.
+Here the first benchmark simply reads the cache from a single goroutine, thus demonstrating
+uncontended single-threaded performance. All the other benchmarks access the cache in parallel
+with from 1 to 10000 other goroutines, running on 6 real CPU cores. The cache is instantiated
+with integer keys and values.
