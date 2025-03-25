@@ -41,8 +41,8 @@ backend function, and it may be considered as a wrapper around the backend that 
 	(assuming in this particular scenario there is no need to ever delete a record from the cache).
 * `Delete(K)`: deletes the specified key from the cache; no-op if the key is not present.
 
-The cache object is safe for concurrent access. To flush the cache simply replace it with a
-newly created one.
+The cache object is safe for concurrent access, but the backend function may be called from multiple threads.
+To flush the cache simply replace it with a newly created one.
 
 ### Benchmarks
 ```
