@@ -61,7 +61,7 @@ BenchmarkContended_1000-6           3614            434145 ns/op
 BenchmarkContended_10000-6           328           6779290 ns/op
 PASS
 ```
-Here the first benchmark simply reads the cache from a single goroutine, thus demonstrating
-uncontended single-threaded performance. All the other benchmarks access the cache in parallel
-with from 1 to 10000 other goroutines, running on 6 real CPU cores. The cache is instantiated
-with integer keys and values.
+Here the first benchmark demonstrates uncontended single-threaded performance by reading the
+cache from a single goroutine. All the remaining benchmarks access the cache in parallel with
+other 1 to 10000 goroutines reading the cache in a busy loop, running on 6 real CPU cores.
+The cache is instantiated with integer keys and values.
