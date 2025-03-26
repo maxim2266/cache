@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math"
-	"math/rand"
+	"math/rand/v2"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -104,8 +104,6 @@ func TestFewRecords(t *testing.T) {
 }
 
 func TestCacheOperation(t *testing.T) {
-	rand.Seed(time.Now().UnixNano())
-
 	const cacheSize = 5
 
 	var (
@@ -183,7 +181,7 @@ func TestRandomFill(t *testing.T) {
 	var keys [500000]int
 
 	for i := range keys {
-		keys[i] = rand.Intn(100)
+		keys[i] = rand.IntN(100)
 	}
 
 	if err := fill(get, keys[:], validKey); err != nil {
@@ -261,7 +259,7 @@ func TestConcurrentAccess(t *testing.T) {
 			var keys [100000]int
 
 			for i := range keys {
-				keys[i] = rand.Intn(100)
+				keys[i] = rand.IntN(100)
 			}
 
 			ts := time.Now()
